@@ -5,12 +5,12 @@ import rich
 from markdown_to_html import get_block_header_tag, markdown_to_html_node
 
 
-def generate_pages_recursive(dir_path_content: str, template_path: str, dest_dir_path: str) -> None:
+def generate_pages_recursive(dir_path_content: str, template_path: str, dest_dir_path: str, basepath: str) -> None:
     for entry in os.listdir(dir_path_content):
         from_path = os.path.join(dir_path_content, entry)
         dest_path = os.path.join(dest_dir_path, entry)
         if not os.path.isfile(from_path):
-            generate_pages_recursive(from_path, template_path, dest_path)
+            generate_pages_recursive(from_path, template_path, dest_path, basepath)
         else:
             filename, ext = os.path.splitext(entry)
             if ext != ".md":
@@ -18,10 +18,10 @@ def generate_pages_recursive(dir_path_content: str, template_path: str, dest_dir
                 continue
             target_file = filename + ".html" 
             dest_path = os.path.join(dest_dir_path, target_file)
-            generate_page(from_path, template_path, dest_path)
+            generate_page(from_path, template_path, dest_path, basepath)
             
 
-def generate_page(from_path: str, template_path: str, dest_path: str) -> None:
+def generate_page(from_path: str, template_path: str, dest_path: str, basepath) -> None:
     rich.print(f"Generating page from {from_path!r} to {dest_path!r} using template {template_path!r}")
     with open(from_path) as file:
         markdown = file.read()
@@ -32,10 +32,11 @@ def generate_page(from_path: str, template_path: str, dest_path: str) -> None:
     page_title = extract_title(markdown)
     page_with_title = template.replace("{{ Title }}", page_title)
     full_html = page_with_title.replace("{{ Content }}", html_content)
+    complete_page = full_html.replace('href="/',f'href="{basepath}').replace('src="/', f'src="{basepath}')
     
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
     with open(dest_path, "w") as file:
-        file.write(full_html)
+        file.write(complete_page)
 
 
 def extract_title(markdown: str) -> str:

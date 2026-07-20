@@ -1,1 +1,1 @@
-python3 src/main.py "/krim"
+python3 src/main.py "/krim/"
